@@ -1,0 +1,153 @@
+# 1. Cargar librerías 
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthhires)
+library(ggrepel)
+
+# 2. Países vecinos
+paises_europa <- ne_countries(scale = "medium", continent = "Europe", returnclass = "sf")
+
+# etiquetas países
+paises_vecinos <- subset(
+  paises_europa, 
+  admin %in% c("Sweden", "Norway", "Finland", "Denmark", "Estonia", "Latvia", "Lithuania", "Russia")
+)
+
+# ajuste coordenadas Noruega
+coords_paises <- st_coordinates(st_centroid(st_geometry(paises_vecinos)))
+paises_vecinos$x <- coords_paises[, 1]
+paises_vecinos$y <- coords_paises[, 2]
+
+paises_vecinos$x[paises_vecinos$admin == "Norway"] <- 8.5
+paises_vecinos$y[paises_vecinos$admin == "Norway"] <- 61.0
+
+# 3. provincias 
+suecia_regiones <- ne_states(country = "Sweden", returnclass = "sf")
+
+# 4. regiones de interés 
+regiones_interes <- c("Gotland", "Skåne", "Norrbotten")
+
+# leyenda
+suecia_regiones$categoria <- ifelse(
+  suecia_regiones$name %in% regiones_interes, 
+  "Regiones de muestreo en Suecia", 
+  "Otras regiones"
+)
+
+
+regiones_etiquetas <- suecia_regiones[suecia_regiones$categoria == "Regiones de muestreo en Suecia", ]
+
+# 5. definir las localidades 
+localidades <- data.frame(
+  nombre = c("Abisko", "Björkliden", "Visby", "Helsingborg"),
+  lon = c(18.8312, 18.6821, 18.2960, 12.6945),
+  lat = c(68.3495, 68.4064, 57.6348, 56.0465)
+)
+
+localidades_sf <- st_as_sf(localidades, coords = c("lon", "lat"), crs = 4326)
+
+# 6. generar el mapa 
+mapa_suecia <- ggplot() +
+  
+  # Fondo con los países limítrofes
+  geom_sf(data = paises_europa, fill = "gray95", color = "gray80", linewidth = 0.3) +
+  
+  # Capa de regiones
+  geom_sf(data = suecia_regiones, aes(fill = categoria), color = "white", linewidth = 0.35) +
+  
+  scale_fill_manual(
+    values = c(
+      "Regiones de muestreo en Suecia" = "steelblue", 
+      "Otras regiones"                = "gray90"
+    ),
+    name = NULL
+  ) +
+  
+  # Nombres de los países
+  geom_text_repel(
+    data = paises_vecinos,
+    aes(x = x, y = y, label = name_es), 
+    color = "gray45",
+    size = 3.5,
+    fontface = "bold",
+    bg.color = "white",
+    bg.r = 0.15
+  ) +
+  
+  # etiquetas regiones de muestreo
+  geom_text_repel(
+    data = regiones_etiquetas,
+    aes(label = name, geometry = geometry),
+    stat = "sf_coordinates",
+    fontface = "italic",
+    color = "darkblue",
+    size = 3.8,
+    nudge_x = ifelse(regiones_etiquetas$name == "Gotland", 1.8,
+                     ifelse(regiones_etiquetas$name == "Skåne", 1.0,
+                            ifelse(regiones_etiquetas$name == "Norrbotten", 2.0, 0))),
+    box.padding = 0.8
+  ) +
+  
+  # puntos
+  geom_sf(
+    data = localidades_sf, 
+    shape = 21,         
+    fill = "red",       
+    color = "black",    
+    size = 3.5,         
+    stroke = 0.8        
+  ) +
+  
+  # etiquetas localidades
+  geom_text_repel(
+    data = localidades,
+    aes(x = lon, y = lat, label = nombre),
+    fontface = "bold",
+    size = 4,
+    nudge_x = ifelse(localidades$nombre == "Visby", -1.8,
+                     ifelse(localidades$nombre == "Helsingborg", -1.5, 0)),
+    box.padding = 0.6,
+    point.padding = 0.4,
+    min.segment.length = 0,
+    segment.color = "gray30",
+    segment.size = 0.4
+  ) +
+  
+  # encuadre geográfico
+  coord_sf(
+    xlim = c(4, 32),
+    ylim = c(53, 71),
+    expand = FALSE
+  ) +
+  
+  # estilo visual
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "aliceblue", color = NA),
+    panel.grid.major = element_line(color = "white", linewidth = 0.2),
+    legend.position = "bottom",
+    legend.text = element_text(size = 11),
+    plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
+    plot.subtitle = element_text(size = 11, hjust = 0.5, color = "gray30"),
+    axis.title = element_blank(),
+    axis.text = element_text(color = "gray40", size = 8)
+  ) +
+  labs(
+    title = "Ubicación de Abisko, Björkliden, Visby y Helsingborg"
+  )
+
+# 7. mostrar el mapa 
+print(mapa_suecia)
+
+# 8. guardar mapa
+
+ggsave(
+  filename = "mapa_suecia_2.png",
+  plot = mapa_suecia,
+  width = 8,
+  height = 10,
+  units = "in",
+  dpi = 300,        
+  bg = "white"   
+)
