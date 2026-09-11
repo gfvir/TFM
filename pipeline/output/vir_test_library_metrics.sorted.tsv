@@ -1,0 +1,12 @@
+id	raw_reads_pairs	fastp_filtered_reads	ref_genome	mapping_tool	mapped_reads	mq_filter	filtered_reads	endogenous_DNA	unique_reads	library_complexity	min_read_length	max_read_length	mean_read_length	median_read_length
+AF014D_library-1	10441910	8525791	Bombus_pascuorum_ND_pepper	bwa-aln	3867042	25	910582	8.72045	369194	40.5448	30	210	42	39
+AF014_library-1	37954344	35217028	Bombus_pascuorum_ND_pepper	bwa-aln	30916308	25	20329231	53.5623	15199214	74.7653	30	286	63	58
+AF042D_library-1	12818869	10762965	Bombus_pascuorum_ND_pepper	bwa-aln	7035337	25	1756384	13.7016	1024396	58.3241	30	280	46	43
+AF042_library-1	31077805	29144766	Bombus_pascuorum_ND_pepper	bwa-aln	24881798	25	15280805	49.1695	11060498	72.3816	30	286	58	55
+AF047D_library-1	11108742	8981560	Bombus_pascuorum_ND_pepper	bwa-aln	5697211	25	1090285	9.81466	766923	70.3415	30	235	43	40
+AF047_library-1	42166571	36787403	Bombus_pascuorum_ND_pepper	bwa-aln	27467375	25	9367731	22.216	6517938	69.5786	30	284	50	45
+AF048D_library-1	11227575	8379135	Bombus_pascuorum_ND_pepper	bwa-aln	6028366	25	1282484	11.4226	979289	76.3588	30	261	42	39
+AF048_library-1	38828957	35242501	Bombus_pascuorum_ND_pepper	bwa-aln	26793306	25	9038872	23.2787	6983396	77.2596	30	286	55	50
+AF049D_library-1	9280443	7226417	Bombus_pascuorum_ND_pepper	bwa-aln	4614343	25	595389	6.41552	108782	18.2707	30	173	45	41
+AF049_library-1	37578582	34225109	Bombus_pascuorum_ND_pepper	bwa-aln	30812494	25	20539336	54.657	15970576	77.756	30	285	53	49
+EX1_library-1	105754	14476	Bombus_pascuorum_ND_pepper	bwa-aln	74	25	0	0	0	0		0	0	
