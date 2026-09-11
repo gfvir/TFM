@@ -1,0 +1,1 @@
+# Ejecución del pipeline DNAharvester (v0.2.2) desde MobaXterm Personal Edition (v26.4) 
