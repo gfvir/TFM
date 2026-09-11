@@ -1,4 +1,4 @@
-# 0. Guardado en PNG max res
+# 0. Guardado en .png max res
 png("barplot_max_res_png.png", 
     width = 6,        # ancho en pulgadas 
     height = 6,       # alto en pulgadas
