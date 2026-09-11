@@ -1,1 +1,18 @@
 # Ejecución del pipeline DNAharvester (v0.2.2) desde MobaXterm Personal Edition (v26.4) 
+# Iniciar sesión dardel.pdc.kth.se
+# cambiar a directorio DNA harvester
+> cd /cfs/klemming/projects/supr/museomics_store_2025/bees/virginia/DNAharvester/
+# cargar tmux
+> module load PDC bioinfo-tools apptainer tmux
+# ver si hay sesiones abiertas en tmux
+> tmux ls
+# reengancharme a una sesión abierta
+> tmux a -t nombredelasesion
+# o bien crear nueva sesión
+> tmux new-session -s DNAharvester
+# una vez iniciada la sesión en tmux, activar el módulo de conda
+> ml PDC miniconda3/26.3.2-2-cpeGNU-26.03
+# activar el environment de conda
+> source activate /cfs/klemming/projects/supr/museomics_store_2025/bees/virginia
+# lanzar DNA harvester
+> nextflow run -c /cfs/klemming/projects/supr/museomics_store_2025/bees/virginia/vir_bees.config -profile dardel_large main.nf -resume  2>&1 | tee vir_bees_fastqc_1.out 
