@@ -1,0 +1,1 @@
+el path al genoma de referencia es /cfs/klemming/projects/supr/museomics_store_2025/bees/references/Bombus_pascuorum_ND_pepper.fasta
