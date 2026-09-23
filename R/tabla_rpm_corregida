@@ -1,0 +1,31 @@
+# Tabla conteos en lecturas por millón, con abdómenes corregidos y sin EX1 (desde objeto phyloseq ps_corregido)
+
+# 0. Cargar librerías
+library(phyloseq)
+library(dplyr)
+library(tibble)
+
+# 1. Extraer el total de lecturas crudas de las librerías desde ps_corregido
+lecturas_totales_corregido <- sample_data(ps_corregido)$raw_reads_pairs
+
+# 2. Extraer la matriz de conteos corregidos
+matriz_conteos_corregido <- as(otu_table(ps_corregido), "matrix")
+
+# Especies queden organizadas en las filas
+if (!taxa_are_rows(ps_corregido)) {
+  matriz_conteos_corregido <- t(matriz_conteos_corregido)
+}
+
+# 3. Calcular RPM dividiendo cada columna por sus lecturas totales de librería
+matriz_rpm_corregido <- sweep(matriz_conteos_corregido, 2, lecturas_totales_corregido, "/") * 1e6
+
+# 4. Formatear la tabla con los nombres de las especies
+tabla_rpm_corregido <- as.data.frame(matriz_rpm_corregido) %>%
+  rownames_to_column(var = "Especie")
+
+# 5. Ver la tabla en consola
+View(tabla_rpm_corregido)
+
+# 6. Guardar la tabla
+
+write.csv2(tabla_rpm_corregido, "tabla_rpm_corregido.csv", row.names = FALSE)
