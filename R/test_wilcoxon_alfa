@@ -1,0 +1,37 @@
+# test wilcoxon. diversidad alfa
+
+# 0. Cargo librerías
+
+library(phyloseq)
+library(dplyr)
+
+# 1. Extraer la tabla de valores que calculó phyloseq
+df_alfa_valores <- estimate_richness(ps_corregido, measures = c("Observed", "Shannon"))
+
+# 2. Asignar los metadatos a la tabla (tipo de muestra, individuo)
+df_alfa <- df_alfa_valores %>%
+  mutate(
+    Sample = rownames(.),
+    Tipo_Muestra = if_else(grepl("D$", Sample), "Abdomen", "Pata"),
+    Individuo = gsub("D$", "", Sample)
+  ) %>%
+  arrange(Individuo, Tipo_Muestra)
+
+# 3. Ejecutar los tests de Wilcoxon pareados
+test_riqueza <- wilcox.test(
+  df_alfa$Observed[df_alfa$Tipo_Muestra == "Abdomen"],
+  df_alfa$Observed[df_alfa$Tipo_Muestra == "Pata"],
+  paired = TRUE
+)
+
+test_shannon <- wilcox.test(
+  df_alfa$Shannon[df_alfa$Tipo_Muestra == "Abdomen"],
+  df_alfa$Shannon[df_alfa$Tipo_Muestra == "Pata"],
+  paired = TRUE
+)
+
+# 4. Imprimir resultados en consola
+cat("--- TEST DE WILCOXON: RIQUEZA (Observed) ---\n")
+print(test_riqueza)
+cat("\n--- TEST DE WILCOXON: SHANNON ---\n")
+print(test_shannon)
