@@ -1,28 +1,24 @@
-# indice de diversidad alfa, richness, shannon, sin EX1
+# Índice de diversidad alfa (Riqueza y Shannon) basado en ps_corregido
 
-# 0. cargo librerías
-
+# 0. Cargar librerías
 library(phyloseq)
 library(ggplot2)
 
-# 1. Filtrar el blanco de extracción (EX1) del objeto phyloseq (ps)
-ps_clean <- subset_samples(ps, sample_names(ps) != "EX1")
-
-# 2. Crear la variable asignando las etiquetas sobre el objeto filtrado
-sample_data(ps_clean)$Grupo_Muestra <- ifelse(
-  grepl("D$", sample_names(ps_clean)), 
+# 1. Crear la variable asignando las etiquetas sobre ps_corregido
+sample_data(ps_corregido)$Grupo_Muestra <- ifelse(
+  grepl("D$", sample_names(ps_corregido)), 
   "Abdomen", 
   "Pata"
 )
 
-# 3. Representar alfa diversidad con ps_clean
-plot_richness(ps_clean, measures = c("Observed", "Shannon")) +
+# 2. Representar diversidad alfa con ps_corregido
+p_alfa <- plot_richness(ps_corregido, measures = c("Observed", "Shannon")) +
   geom_point(aes(color = Grupo_Muestra), size = 3.5, alpha = 0.9) +
   scale_color_manual(
     values = c("Abdomen" = "#d7191c", "Pata" = "#ff7f00"),
     name = "Tipo de muestra"
   ) +
-  # cambio el nombre de "Observed" a "Riqueza (S)" 
+  # Cambio el nombre de "Observed" a "Riqueza (S)" 
   facet_wrap(
     ~variable, 
     scales = "free_y", 
@@ -43,13 +39,16 @@ plot_richness(ps_clean, measures = c("Observed", "Shannon")) +
     y = "Valor del Índice"
   )
 
-# 3. Guardo .png
+print(p_alfa)
+
+# 3. Guardar .png
 
 ggsave(
-  filename = "shannon_alfa_clean.png",
-  dpi = 600,             # máxima resolución
-  width = 10,            # ancho en pulgadas
-  height = 8,             # alto en pulgadas 
-  units = "in",          # unidades en pulgadas
-  bg = "white"           # fondo blanco
+  filename = "alfa_shannon.png",
+  plot = p_alfa,
+  dpi = 600,            
+  width = 10,             # Ancho en pulgadas
+  height = 8,             # Alto en pulgadas
+  units = "in",
+  bg = "white"            # fondo blanco
 )
