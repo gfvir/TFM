@@ -1,0 +1,25 @@
+# lecturas totales, con abdómenes sin corregir y EX1
+
+# 0. Cargo librerías
+
+library(phyloseq)
+library(dplyr)
+library(tibble)
+
+# 1. Extraer la matriz de conteos del objeto phyloseq (ps)
+matriz_cruda_completa <- as(otu_table(ps), "matrix")
+
+# Asegurar que las especies estén en filas
+if (!taxa_are_rows(ps)) {
+  matriz_cruda_completa <- t(matriz_cruda_completa)
+}
+
+# 2. Formatear como tabla, calcular el total de lecturas por especie y orden alfabético
+tabla_conteos_completos <- as.data.frame(matriz_cruda_completa) %>%
+  rownames_to_column(var = "Especie") %>%
+  mutate(Total_Reads = rowSums(across(where(is.numeric)))) %>%
+  arrange(Especie) # Orden alfabético (A-Z)
+
+# 3. Guardar la tabla
+
+write.csv2(tabla_conteos_completos, "tabla_microbial_screening.csv", row.names = FALSE)
