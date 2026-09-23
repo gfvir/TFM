@@ -1,29 +1,34 @@
-# heatmap perfil metagenómico sin EX 1 (blanco de extracción)
+# heatmap abundancias en rpm especies cribado microbiano (desde rpm corregido)
 
-#0. cargo librerías
+# 0. Cargo librerías
 
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 
-# 1. Filtrar el blanco EX1 y asignar categorías
-df_rpm_clean <- df_rpm_real %>%
-  filter(Sample != "EX1") %>% #quitar el blanco de extracción
+# 1. Transformar tabla_rpm_corregido a formato largo y clasificar especies por categorías
+df_heatmap <- tabla_rpm_corregido %>%
+  pivot_longer(
+    cols = -Especie, 
+    names_to = "Sample", 
+    values_to = "RPM_corregida"
+  ) %>%
   mutate(
     Categoria = case_when(
       # Contaminación
-      OTU == "Homo sapiens" ~ "Contaminación",
+      Especie == "Homo sapiens" ~ "Contaminación",
       
       # Patógenos
-      OTU %in% c("Crithidia bombi", "Vairimorpha apis", 
-                 "Vairimorpha bombi", "Vairimorpha ceranae",
-                 "Wolbachia pipientis") ~ "Patógenos",
+      Especie %in% c("Crithidia bombi", "Vairimorpha apis", 
+                     "Vairimorpha bombi", "Vairimorpha ceranae",
+                     "Wolbachia pipientis") ~ "Patógenos",
       
       # Core Microbiota
-      OTU %in% c("Snodgrassella alvi", "Snodgrassella communis", "Snodgrassella gandavensis",
-                 "Gilliamella apicola", "Gilliamella bombicola", "Gilliamella mensalis", "Gilliamella sp",
-                 "Lactobacillus bombicola", "Lactobacillus panisapium",
-                 "Bifidobacterium bohemicum", "Bombiscardovia coagulans", 
-                 "Schmidhempelia bombi") ~ "Core microbiota",
+      Especie %in% c("Snodgrassella alvi", "Snodgrassella communis", "Snodgrassella gandavensis",
+                     "Gilliamella apicola", "Gilliamella bombicola", "Gilliamella mensalis", "Gilliamella sp",
+                     "Lactobacillus bombicola", "Lactobacillus panisapium",
+                     "Bifidobacterium bohemicum", "Bombiscardovia coagulans", 
+                     "Schmidhempelia bombi") ~ "Core microbiota",
       
       # El resto pasa a Non-core microbiota
       TRUE ~ "Non-core microbiota"
@@ -32,7 +37,7 @@ df_rpm_clean <- df_rpm_real %>%
   )
 
 # 2. Generar el heatmap
-ggplot(df_rpm_clean, aes(x = Sample, y = OTU, fill = RPM_real)) +
+p_heatmap <- ggplot(df_heatmap, aes(x = Sample, y = Especie, fill = RPM_corregida)) +
   geom_tile(color = "grey85", linewidth = 0.2) +
   scale_fill_gradient(
     low = "white",
@@ -54,18 +59,21 @@ ggplot(df_rpm_clean, aes(x = Sample, y = OTU, fill = RPM_real)) +
     plot.title = element_text(face = "bold", size = 14, hjust = 0.5)
   ) +
   labs(
-    title = "Perfil metagenómico por categoría funcional (lecturas por millón)",
+    title = "Panel microbiano (lecturas por millón)",
     x = NULL,
     y = NULL
   )
 
-# 3. Guardo .png
+# 3. Sacar por pantalla
+print(p_heatmap)
 
+# 5. Guardar .png
 ggsave(
-  filename = "heatmap_perfil_metagenomico_clean.png",
+  filename = "heatmap.png",
+  plot = p_heatmap,
   dpi = 600,             # máxima resolución
   width = 10,            # ancho en pulgadas
-  height = 8,             # alto en pulgadas 
+  height = 8,            # alto en pulgadas 
   units = "in",          # unidades en pulgadas
   bg = "white"           # fondo blanco
 )
