@@ -1,17 +1,31 @@
-# Diversidad beta, sin EX1
+# Diversidad beta. Bray - Curtis. Con abdomen corregido y sin EX1
 
-#0. Cargo librerías
-
+# 0. Cargar librerías
 library(phyloseq)
 library(ggplot2)
-library(ggrepel) # para evitar que las etiquetas se solapen
+library(ggrepel)
+library(vegan)
 
-# 1. Generar el gráfico base de la PCoA sin EX1
-p <- plot_ordination(ps_clean, ord_bray_clean) +
+# 1. Transformar ps_corregido a RPM reales (usando raw_reads_pairs)
+ps_rpm_corregido <- ps_corregido
+
+otu_table(ps_rpm_corregido) <- otu_table(
+  sweep(as(otu_table(ps_corregido), "matrix"), 
+        if (taxa_are_rows(ps_corregido)) 2 else 1, 
+        sample_data(ps_corregido)$raw_reads_pairs, 
+        "/") * 1e6, 
+  taxa_are_rows = taxa_are_rows(ps_corregido)
+)
+
+# 2. Calcular la ordenación por PCoA usando la distancia de Bray-Curtis
+ord_bray_corregido <- ordinate(ps_rpm_corregido, method = "PCoA", distance = "bray")
+
+# 3. Generar el gráfico de PCoA etiquetado
+p <- plot_ordination(ps_rpm_corregido, ord_bray_corregido) +
   geom_point(aes(color = Grupo_Muestra, shape = Grupo_Muestra), size = 4, alpha = 0.85) +
-  # Añadir los nombres de cada muestra
+  # Añadir los nombres de cada muestra con ggrepel
   geom_text_repel(
-    aes(label = sample_names(ps_clean)),
+    aes(label = sample_names(ps_rpm_corregido)),
     size = 3.5,
     box.padding = 0.35,
     point.padding = 0.5,
@@ -36,18 +50,20 @@ p <- plot_ordination(ps_clean, ord_bray_clean) +
   ) +
   labs(
     title = "Diversidad beta. PCoA (Distancia de Bray-Curtis)",
-    x = paste0("PCoA 1 (", round(ord_bray_clean$values$Relative_eig[1] * 100, 1), "%)"),
-    y = paste0("PCoA 2 (", round(ord_bray_clean$values$Relative_eig[2] * 100, 1), "%)")
+    x = paste0("PCoA 1 (", round(ord_bray_corregido$values$Relative_eig[1] * 100, 1), "%)"),
+    y = paste0("PCoA 2 (", round(ord_bray_corregido$values$Relative_eig[2] * 100, 1), "%)")
   )
+
+# 4. Mostrar gráfico
 print(p)
 
-# 2. Guardo .png
-
+# 5. Guardar .png
 ggsave(
-  filename = "bray_curtis_beta.png",
+  filename = "bray_curtis.png",
+  plot = p,
   dpi = 600,             # máxima resolución
   width = 10,            # ancho en pulgadas
-  height = 8,             # alto en pulgadas 
+  height = 8,            # alto en pulgadas 
   units = "in",          # unidades en pulgadas
   bg = "white"           # fondo blanco
 )
