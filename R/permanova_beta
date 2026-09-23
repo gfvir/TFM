@@ -1,0 +1,34 @@
+# permanova diversidad beta
+
+# 0. Cargo librerías
+
+library(dplyr)
+library(tibble)
+library(vegan)
+
+# 1. Preparar matriz de abundancias desde tabla_rpm_corregido
+matriz_rpm <- tabla_rpm_corregido %>%
+  column_to_rownames(var = "Especie") %>%
+  t()
+
+# 2. Crear los metadatos asociados
+df_meta <- data.frame(Sample = rownames(matriz_rpm)) %>%
+  mutate(
+    Tipo_Muestra = if_else(grepl("D$", Sample), "Abdomen", "Pata"),
+    Individuo = gsub("D$", "", Sample)
+  )
+
+# 3. Calcular matriz de Bray-Curtis y PERMANOVA
+dist_bray <- vegdist(matriz_rpm, method = "bray")
+df_meta_beta <- df_meta[match(rownames(matriz_rpm), df_meta$Sample), ]
+
+permanova_res <- adonis2(
+  dist_bray ~ Tipo_Muestra, 
+  data = df_meta_beta, 
+  strata = df_meta_beta$Individuo,
+  permutations = 999
+)
+
+# 4. Imprimir resultados en consola
+cat("--- PERMANOVA (ADONIS2): BRAY-CURTIS ---\n")
+print(permanova_res)
