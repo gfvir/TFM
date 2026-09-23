@@ -1,0 +1,36 @@
+# objeto phyloseq restando la señal de EX1 a las muestras de abdomen y sin EX1
+
+library(phyloseq)
+
+# 1. Extraer la matriz de conteos 
+counts_raw <- as(otu_table(ps), "matrix")
+if (!taxa_are_rows(ps)) { counts_raw <- t(counts_raw) }
+
+# 2. Vector de conteos del blanco de extracción EX1
+ex1_profile <- counts_raw[, "EX1"]
+
+# 3. Crear matriz limpia y restar EX1 a las muestras de abdomen (que terminan en 'D')
+counts_clean <- counts_raw
+
+for (col_name in colnames(counts_raw)) {
+  if (grepl("D$", col_name) && col_name != "EX1") {
+    # Restamos EX1 y fijamos los valores negativos a 0
+    counts_clean[, col_name] <- pmax(0, counts_raw[, col_name] - ex1_profile)
+  } else {
+    # Muestras de Pata y el propio EX1 conservan sus valores originales por ahora
+    counts_clean[, col_name] <- counts_raw[, col_name]
+  }
+}
+
+# 4. Asegurar formato de número entero
+storage.mode(counts_clean) <- "integer"
+
+# 5. Crear nuevo objeto phyloseq con los conteos corregidos
+ps_corregido <- phyloseq(
+  otu_table(counts_clean, taxa_are_rows = TRUE),
+  tax_table(ps),
+  sample_data(ps)
+)
+
+# 6. Eliminar el blanco de extracción EX1
+ps_corregido <- subset_samples(ps_corregido, sample_names(ps_corregido) != "EX1")
