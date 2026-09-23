@@ -1,0 +1,25 @@
+# tabla conteos en lecturas por millón (tengo en cuenta bombus), con EX1 y abdomen sin corregir
+
+# 0. Cargar librerías
+
+library(phyloseq)
+library(dplyr)
+library(tibble)
+
+# 1. Extraer las lecturas totales de cada librería usando raw_reads_pairs
+lecturas_totales_ps <- sample_data(ps)$raw_reads_pairs
+
+# 2. Extraer la matriz de conteos del objeto ps original
+matriz_conteos_ps <- as(otu_table(ps), "matrix")
+
+# Asegurar que las especies queden en las filas
+if (!taxa_are_rows(ps)) {
+  matriz_conteos_ps <- t(matriz_conteos_ps)
+}
+
+# 3. Calcular las RPM
+matriz_rpm_ps <- sweep(matriz_conteos_ps, 2, lecturas_totales_ps, "/") * 1e6
+
+# 4. Formatear la tabla final con la columna 'Especie'
+tabla_rpm_original <- as.data.frame(matriz_rpm_ps) %>%
+  rownames_to_column(var = "Especie")
